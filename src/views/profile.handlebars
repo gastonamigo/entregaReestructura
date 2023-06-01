@@ -1,0 +1,20 @@
+<h1>pagina perfil</h1>
+
+<h2>Sea bienvenido "{{userInfo.userFullName}}"</h2>
+<h3>A continuación podrá ver las caracteristicas de su perfil:</h3>
+ 
+<div>
+    <ul> 
+        <li>Edad: "{{userInfo.userAge}}"</li>
+        <li>Email: "{{userInfo.userEmail}}"</li>
+        <li>Rol: "{{userInfo.userRol}}"</li>
+        <li>Carrito: "{{userInfo.userCart}}"</li>
+    </ul>
+</div>
+
+
+<div>
+    <form method="post" action="/api/sessions/logout">
+        <button type="submit">logOut</button>
+    </form>
+</div>
