@@ -1,4 +1,8 @@
 import passport from "passport";
+import { sendRecoveryPass } from "../utils/email.js";
+import { generateEmailToken, verifyEmailToken, isValidPassword, createHash } from "../utils.js";
+import { findUSerService, findUSerAndUpdateService } from "../repository/user.repository.js";
+
 
 class authController{
     static post_PassportSignup = passport.authenticate("signupStrategy",{
@@ -42,6 +46,60 @@ class authController{
     }
 
     /*--------------------------------------------------------------*/
+
+    static post_ForgotPassword = async (req, res) => {
+        try {
+            const {email} = req.body;
+            const user = await findUSerService(email);
+            if(!user){
+                return res.send(`<div>Error, <a href="/forgot-password">Intente de nuevo</a></div>`);
+            }
+
+
+            const token = generateEmailToken(email,2*60);
+            await sendRecoveryPass(email,token);
+            res.send("se envio un correo a su cuenta para restablecer la contraseña, regresar <a href='/login'>al login</a>");
+
+        } catch (error) {
+            res.send(`<div>Error, <a href="/forgot-password">Intente de nuevo</a></div>`)
+        }
+    }
+
+    static post_ResetPassword = async (req, res) => {
+        try {
+            const token = req.query.token;
+            const {email, newPassword} = req.body;
+
+
+            const validEmail = verifyEmailToken(token);
+            if(!validEmail){
+                return res.send(`El enlace ya no es valido, genere un nuevo enlace para recuperar la contraseña <a href="/forgot-password" >Recuperar contraseña</a>`)
+            }
+
+            const user = await findUSerService(email);
+            if(!user){
+                return res.send("usuario no registrado")
+            }
+            if(isValidPassword(user, newPassword)){
+                return res.send("No puedes usar la misma contraseña");
+            }
+
+            const userData = {
+                ...user._doc,
+                password:createHash(newPassword)
+            }
+            console.log("userData",userData)
+
+            const userUpdate = await findUSerAndUpdateService(email, userData);
+            res.render("login",{message:"Se ha actualiza correctamente la contraseña"});
+        } catch (error) {
+            console.log ("error", error)
+            res.send(error.message);
+        }
+    }
+
+    /*--------------------------------------------------------------*/
+
 
     static post_Logout = (req,res) =>{
         req.logOut((error) => {
