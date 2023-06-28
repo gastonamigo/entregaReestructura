@@ -8,11 +8,13 @@ import MongoStore from "connect-mongo";
 import passport from "passport";
 import { initializedPassport } from "./config/passport.config.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
-
+import { swaggerSpecs } from "./config/docConfig.js";
+import swaggerUi from "swagger-ui-express";
 import productRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/cart.routes.js";
 import viewstRouter from "./routes/views.routes.js";
 import authRouter from "./routes/auth.routes.js";
+import { usersRouter } from "./routes/users.routes.js";
 import { addLoggerReq, addLogger } from "./utils/logger.js";
 
 
@@ -71,6 +73,7 @@ app.use ("/api/products", productRouter)
 app.use("/api/carts", cartsRouter)
 app.use("/", viewstRouter)
 app.use ("/api/sessions", authRouter)
-
+app.use ("/api/users" , usersRouter)
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup (swaggerSpecs));
 
 app.use (errorHandler);
